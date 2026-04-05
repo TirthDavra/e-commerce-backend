@@ -5,6 +5,7 @@ import connectDB from "./config/db";
 import authRoutes from "./routes/auth.routes";
 import jobRoutes from "./routes/job.routes";
 import profileRoutes from "./routes/profile.routes";
+import applicationRoutes from "./routes/application.routes";
 import { ensureAdminUser } from "./seed/ensureAdminUser";
 
 dotenv.config();
@@ -26,6 +27,7 @@ app.get("/health", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/jobs", jobRoutes);
 app.use("/api/profile", profileRoutes);
+app.use("/api/applications", applicationRoutes);
 
 async function bootstrap() {
   await connectDB();

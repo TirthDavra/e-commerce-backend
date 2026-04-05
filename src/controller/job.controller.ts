@@ -6,6 +6,49 @@ import { createJobSchema } from "../validations/job.validation";
 
 type CreateJobBody = z.infer<typeof createJobSchema>;
 
+function escapeRegex(s: string) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/** Open jobs only + optional search (q) and filters (jobType, location). */
+function openJobFilter(query: Request["query"]) {
+    const parts: Record<string, unknown>[] = [{ isOpen: true }];
+
+    const q = String(query.q ?? "").trim();
+    if (q) {
+        const safe = escapeRegex(q);
+        const rx = new RegExp(safe, "i");
+        parts.push({
+            $or: [{ title: rx }, { description: rx }, { skills: rx }],
+        });
+    }
+
+    const jobType = String(query.jobType ?? "").trim();
+    if (
+        jobType === "full-time" ||
+        jobType === "part-time" ||
+        jobType === "contract"
+    ) {
+        parts.push({ jobType });
+    }
+
+    const location = String(query.location ?? "").trim();
+    if (location) {
+        parts.push({
+            location: {
+                $regex: escapeRegex(location),
+                $options: "i",
+            },
+        });
+    }
+
+    if (parts.length === 1) {
+        return parts[0];
+    }
+
+    return { $and: parts };
+}
+
 function pagingFromQuery(query: Request["query"]) {
     const pageRaw = Number.parseInt(String(query.page ?? "1"), 10);
     const limitRaw = Number.parseInt(String(query.limit ?? "10"), 10);
@@ -56,10 +99,15 @@ export const createJob = async (req: AuthRequest, res: Response) => {
 export const getAllJobs = async (req: Request, res: Response) => {
     try {
         const { page, limit, skip } = pagingFromQuery(req.query);
+        const filter = openJobFilter(req.query);
 
         const [jobs, total] = await Promise.all([
-            Job.find().sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
-            Job.countDocuments({}),
+            Job.find(filter)
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .lean(),
+            Job.countDocuments(filter),
         ]);
 
         const totalPages = total === 0 ? 0 : Math.ceil(total / limit);
