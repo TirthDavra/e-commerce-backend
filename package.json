@@ -1,11 +1,12 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "src/server.ts",
+  "description": "Mini e-commerce auth backend",
+  "type": "module",
+  "main": "src/server.js",
   "scripts": {
-    "start": "node dist/server.js",
-    "dev": "nodemon --exec ts-node src/server.ts"
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
   },
   "keywords": [],
   "author": "",
@@ -16,17 +17,9 @@
     "dotenv": "^17.4.0",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
-    "mongoose": "^9.4.1",
-    "nodemon": "^3.1.14",
-    "zod": "^4.3.6"
+    "mongoose": "^9.4.1"
   },
   "devDependencies": {
-    "@types/bcrypt": "^6.0.0",
-    "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.6",
-    "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^25.5.2",
-    "ts-node-dev": "^2.0.0",
-    "typescript": "^6.0.2"
+    "nodemon": "^3.1.14"
   }
 }
