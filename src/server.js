@@ -3,6 +3,9 @@ import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/auth.routes.js";
+import productRoutes from "./routes/product.routes.js";
+import orderRoutes from "./routes/order.routes.js";
+import { seedDatabase } from "./config/seed.js";
 
 dotenv.config();
 
@@ -18,9 +21,13 @@ app.get("/health", (req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/orders", orderRoutes);
 
 async function bootstrap() {
   await connectDB();
+  await seedDatabase();
+
   app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
   });

@@ -4,6 +4,8 @@ import User from "../model/user.model.js";
 
 export const register = async (req, res) => {
   const { name, email, password, role } = req.body;
+  const userRole = role || "user";
+
   try {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -15,7 +17,7 @@ export const register = async (req, res) => {
       name,
       email,
       password: hashedPassword,
-      role,
+      role: userRole,
     });
 
     return res.status(201).json({
