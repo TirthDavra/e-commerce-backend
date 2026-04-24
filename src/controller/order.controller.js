@@ -3,10 +3,14 @@ import Product from "../model/product.model.js";
 
 export const createOrder = async (req, res) => {
   const userId = req.user?.id;
-  const { items, address } = req.body;
+  const { items, address, paymentCompleted } = req.body;
 
   if (!Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ message: "Order items are required" });
+  }
+
+  if (req.user?.role !== "user") {
+    return res.status(403).json({ message: "Only customers can place orders." });
   }
 
   try {
@@ -45,8 +49,8 @@ export const createOrder = async (req, res) => {
       items: orderItems,
       totalAmount,
       address: address || "",
-      paymentStatus: "pending",
-      status: "pending",
+      paymentStatus: paymentCompleted ? "paid" : "pending",
+      status: paymentCompleted ? "completed" : "pending",
     });
 
     return res.status(201).json({
@@ -56,5 +60,27 @@ export const createOrder = async (req, res) => {
   } catch (error) {
     console.error("Failed to create order", error);
     return res.status(500).json({ message: "Could not place order" });
+  }
+};
+
+export const getOrders = async (req, res) => {
+  const userId = req.user?.id;
+
+  if (req.user?.role !== "user") {
+    return res.status(403).json({ message: "Only customers can view orders." });
+  }
+
+  try {
+    const orders = await Order.find({ user: userId })
+      .populate("items.product", "name image price")
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      message: "Orders retrieved successfully",
+      orders,
+    });
+  } catch (error) {
+    console.error("Failed to get orders", error);
+    return res.status(500).json({ message: "Could not retrieve orders" });
   }
 };
